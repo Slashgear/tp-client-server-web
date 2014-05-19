@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package clientserveurweb;
 
 import clientserveurweb.serveur.Core.Serveur;
@@ -18,7 +17,7 @@ public class ClientServeurWeb {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        Serveur srv=new Serveur(80, 6);
+        Serveur srv = new Serveur(80, 6);
     }
-    
+
 }

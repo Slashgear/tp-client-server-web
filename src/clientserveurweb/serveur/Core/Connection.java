@@ -1,5 +1,7 @@
 package clientserveurweb.serveur.Core;
 
+import clientserveurweb.HTTPProtocol.Get;
+import clientserveurweb.HTTPProtocol.Response;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,14 +16,18 @@ import java.util.logging.Logger;
  * @author Antoine
  */
 public class Connection extends Thread {
+
     /**
      * Socket renvoyé par le accept() du Serveur
      */
     private Socket _socket;
+    
+    private PrintStream out;
 
     /**
      * Constructeur prenant en paramètre un Socket
-     * @param _socket 
+     *
+     * @param _socket
      */
     public Connection(Socket _socket) {
         this._socket = _socket;
@@ -31,7 +37,7 @@ public class Connection extends Thread {
     public void run() {
         traitements();
     }
-    
+
     /**
      * Traitement Basique d'un Serveur
      */
@@ -42,7 +48,7 @@ public class Connection extends Thread {
             String message = "";
             System.out.println("Connexion avec le Client: " + _socket.getInetAddress() + " Sur le port :" + _socket.getPort());
             in = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
-            PrintStream out = new PrintStream(_socket.getOutputStream());
+            out = new PrintStream(_socket.getOutputStream());
             message = in.readLine();
             out.println("Bonjour " + message);
             
@@ -51,6 +57,20 @@ public class Connection extends Thread {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+    
+    public void analyzeRequest(String message) {
+        if(!message.contains(Get.HTTP_VERSION)) {
+            Response rep = new Response(500, "Bad protocol");
+            
+        }
+        if(message.length()== 0 || !message.contains("GET") || !message.contains(Get.HTTP_VERSION)) {
+            //Créer paquet de réponse erreur 400 bad request
+          
+        }
+        //test erreur 404 not found
+        
+        //puis test erreur 403 forbidden
     }
 
 }
