@@ -8,6 +8,10 @@ import java.net.URL;
  */
 public class Get extends Request {
 
+    public String getContent() {
+        return content;
+    }
+
     public Get(URL url) {
         StringBuilder requete = new StringBuilder();
         requete.append("GET ");
@@ -15,7 +19,7 @@ public class Get extends Request {
         requete.append(" ");
         requete.append(HTTP_VERSION);
         content = requete.toString();
-        System.out.println(content);
+        //System.out.println(content);
     }
 
 }

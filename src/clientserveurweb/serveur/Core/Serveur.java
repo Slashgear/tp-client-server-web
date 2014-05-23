@@ -13,6 +13,8 @@ public class Serveur {
      * Socket du Serveur Web
      */
     private ServerSocket _serveur;
+    
+    public static final String SERVER_DIRECTORY = "DataServeur/";
 
     /**
      * Constructeur d'un Serveur Web HTTP 1.1

@@ -22,14 +22,14 @@ public class Client extends Observable implements Runnable {
 
     private InetAddress _ipServ;
     private int _port;
-    private Get _message;
+    private Get _get;
     private Socket _socket;
 
     public Client(int _port, URL url) {
         try {
             this._ipServ = InetAddress.getByName(url.getHost());
             this._port = _port;
-            this._message = new Get(url);
+            this._get = new Get(url);
         } catch (UnknownHostException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -40,7 +40,8 @@ public class Client extends Observable implements Runnable {
             _socket = new Socket(_ipServ, _port);
             BufferedReader in = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
             PrintStream out = new PrintStream(_socket.getOutputStream());
-            out.println(_message);
+            System.out.println(_get.getContent());
+            out.println(_get.getContent());
             System.out.println(in.readLine());
             fireResponse(in.readLine());
 

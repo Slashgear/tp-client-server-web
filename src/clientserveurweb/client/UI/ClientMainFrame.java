@@ -43,6 +43,8 @@ public class ClientMainFrame extends javax.swing.JFrame implements ClientObserve
         jMainTextPane.setEditable(false);
         jScrollPane1.setViewportView(jMainTextPane);
 
+        jURL.setText("http://127.0.0.1/index.html");
+
         jCharger.setText("Charger la page");
         jCharger.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {

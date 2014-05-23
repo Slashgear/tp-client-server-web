@@ -11,7 +11,7 @@ import clientserveurweb.serveur.Core.Serveur;
  *
  * @author Antoine
  */
-public class ClientServeurWeb {
+public class ServeurWeb {
 
     /**
      * @param args the command line arguments
