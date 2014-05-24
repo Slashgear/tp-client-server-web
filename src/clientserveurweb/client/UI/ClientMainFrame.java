@@ -4,11 +4,9 @@ import clientserveurweb.client.Core.Client;
 import clientserveurweb.client.Core.Observers.ClientObserver;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
- *
+ * Web browser UI class
  * @author Adrien
  */
 public class ClientMainFrame extends javax.swing.JFrame implements ClientObserver {

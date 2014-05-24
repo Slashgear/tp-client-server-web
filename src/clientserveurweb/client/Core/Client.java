@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.CharBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,8 +43,13 @@ public class Client extends Observable implements Runnable {
             PrintStream out = new PrintStream(_socket.getOutputStream());
             System.out.println(_get.getContent());
             out.println(_get.getContent());
-            System.out.println(in.readLine());
-            fireResponse(in.readLine());
+            //Lire tout ce qu'on a reçu ?
+            String line = "", pageContent = "";
+            while((line = in.readLine()) != null) {
+                pageContent += line;
+                pageContent += "\n";
+            }
+            fireResponse(pageContent);
 
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
