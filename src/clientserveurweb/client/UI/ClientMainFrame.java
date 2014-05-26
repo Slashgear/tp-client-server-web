@@ -7,9 +7,15 @@ import java.net.URL;
 
 /**
  * Web browser UI class
+ *
  * @author Adrien
  */
 public class ClientMainFrame extends javax.swing.JFrame implements ClientObserver {
+
+    /**
+     * User of the browser
+     */
+    private Client _client;
 
     public static final int DEFAULT_PORT = 80;
 
@@ -34,6 +40,9 @@ public class ClientMainFrame extends javax.swing.JFrame implements ClientObserve
         jURL = new javax.swing.JTextField();
         jCharger = new javax.swing.JButton();
         jQuitter = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jEditorPane = new javax.swing.JEditorPane();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Navigateur Web");
@@ -57,33 +66,47 @@ public class ClientMainFrame extends javax.swing.JFrame implements ClientObserve
             }
         });
 
+        jEditorPane.setEditable(false);
+        jEditorPane.setContentType("text/html");
+        jScrollPane2.setViewportView(jEditorPane);
+
+        jLabel1.setText("URL :");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(42, 42, 42)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jURL, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(60, 60, 60)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jURL, javax.swing.GroupLayout.PREFERRED_SIZE, 548, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jCharger)
-                        .addGap(32, 32, 32)
+                        .addGap(66, 66, 66)
                         .addComponent(jQuitter)
-                        .addGap(0, 140, Short.MAX_VALUE)))
+                        .addGap(0, 237, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 548, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane2)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(17, 17, 17)
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jURL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jQuitter)
                     .addComponent(jCharger)
-                    .addComponent(jQuitter))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 49, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 356, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jURL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1))
                 .addContainerGap())
         );
 
@@ -96,11 +119,19 @@ public class ClientMainFrame extends javax.swing.JFrame implements ClientObserve
 
     private void jChargerMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jChargerMouseClicked
         if (jURL.getText().length() > 0) {
-            Client cli;
             try {
-                cli = new Client(DEFAULT_PORT, new URL(jURL.getText()));
-                cli.addClientObserver(this);
-                Thread processusClient = new Thread(cli);
+                //Connection check
+                //If the connection was never established
+               // if (_client != null) {
+                    //Create a new Client session
+                    _client = new Client(DEFAULT_PORT, new URL(jURL.getText()));
+                    _client.addClientObserver(this);
+                /*} else {
+                    //Else get the URL
+                    _client.setGet(new URL(jURL.getText()));
+                }*/
+
+                Thread processusClient = new Thread(_client);
                 processusClient.start();
             } catch (MalformedURLException ex) {
                 jMainTextPane.setText("URL incorrect");
@@ -110,56 +141,27 @@ public class ClientMainFrame extends javax.swing.JFrame implements ClientObserve
         }
     }//GEN-LAST:event_jChargerMouseClicked
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ClientMainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ClientMainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ClientMainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ClientMainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ClientMainFrame().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jCharger;
+    private javax.swing.JEditorPane jEditorPane;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JTextPane jMainTextPane;
     private javax.swing.JButton jQuitter;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField jURL;
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void onResponse(String str) {
-        jMainTextPane.setText(str);
+    public void onResponseContent(String str, String contentType) {
+        jEditorPane.setContentType("text/html");
+        jEditorPane.setText(str);
     }
 
     @Override
-    public void onError(int errorCode, String message) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void onTextResponse(String str) {
+
+        jMainTextPane.setText(str);
     }
 }

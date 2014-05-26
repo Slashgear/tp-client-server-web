@@ -6,7 +6,7 @@ package clientserveurweb.client.Core.Observers;
  */
 public interface ClientObserver {
 
-    public void onResponse(String str);
+    public void onTextResponse(String str);
 
-    public void onError(int errorCode, String message);
+    public void onResponseContent(String str, String contentType);
 }

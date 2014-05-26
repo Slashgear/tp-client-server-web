@@ -13,7 +13,11 @@ public class Serveur {
      * Socket du Serveur Web
      */
     private ServerSocket _serveur;
-    
+
+    public ServerSocket getServeur() {
+        return _serveur;
+    }
+
     public static final String SERVER_DIRECTORY = "DataServeur/";
 
     /**
@@ -26,13 +30,10 @@ public class Serveur {
         try {
             _serveur = new ServerSocket(port, connection_nb);
             System.out.println("Lancement du Serveur Web sur le port :" + port);
-
-            while (true) {
-                Connection client = new Connection(_serveur.accept());
-                client.start();
-            }
         } catch (IOException ex) {
             System.out.println("Lancement du Serveur impossible, port probablement occupé");
         }
+
     }
+
 }
