@@ -9,4 +9,5 @@ public interface ClientObserver {
     public void onTextResponse(String str);
 
     public void onResponseContent(String str, String contentType);
+    
 }

@@ -3,6 +3,10 @@ package clientserveurweb.client.Core;
 import clientserveurweb.HTTPProtocol.Get;
 import clientserveurweb.client.Core.Observers.Observable;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -14,7 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Class principale définissant un Client Basique
+ * Classz principale définissant un Client Basique
  *
  * @author Antoine
  */
@@ -45,28 +49,36 @@ public class Client extends Observable implements Runnable {
 
     public void traitements() {
         try {
-            //if (!_socket.isConnected()) {
-                _socket = new Socket(_ipServ, _port);
-           //}
-            
+            _socket = new Socket(_ipServ, _port);
+
+            // Flux entrant
             BufferedReader in = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
+
+            // Flux sortant
             PrintStream out = new PrintStream(_socket.getOutputStream());
+
+            //Autres variables
             StringBuilder builder = new StringBuilder();
+            String line = "", contentType = "";
+
             System.out.println(_get.getContent());
             out.println(_get.getContent());
-            
-            String line = "", contentType = "";
-            while ((line = in.readLine()) != null) {
+            out.flush();
+            while ((line = in.readLine()) != null && !line.equals("\r\n") && line != "") {
                 if (line.startsWith("Content-type")) {
                     int i = line.indexOf(line);
-                    contentType = line.substring(i + "Content-type : ".length() - 1);
+                    contentType = line.substring(i + "Content-type: ".length() - 1);
                 }
                 builder.append(line);
-                builder.append("\n");
+                builder.append("\r\n");
             }
             fireTextResponse(builder.toString());
-            int i = builder.toString().indexOf("\n\n");
-            fireResponseContent(builder.toString().substring(i), contentType);
+            int i = builder.toString().indexOf("\r\n\r\n");
+            
+            fireResponseContent(builder.toString().substring(i+4), contentType);
+
+            in.close();
+            out.close();
 
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);

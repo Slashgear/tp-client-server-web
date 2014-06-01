@@ -2,8 +2,11 @@ package clientserveurweb.client.UI;
 
 import clientserveurweb.client.Core.Client;
 import clientserveurweb.client.Core.Observers.ClientObserver;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Web browser UI class
@@ -122,14 +125,19 @@ public class ClientMainFrame extends javax.swing.JFrame implements ClientObserve
             try {
                 //Connection check
                 //If the connection was never established
-               // if (_client != null) {
+                if (_client == null) {
                     //Create a new Client session
-                    _client = new Client(DEFAULT_PORT, new URL(jURL.getText()));
-                    _client.addClientObserver(this);
-                /*} else {
+                    if (jURL.getText().startsWith("http://")) {
+                        _client = new Client(DEFAULT_PORT, new URL(jURL.getText()));
+                    } else {
+                        _client = new Client(DEFAULT_PORT, new URL("http://" + jURL.getText()));
+                    }
+                } else {
                     //Else get the URL
                     _client.setGet(new URL(jURL.getText()));
-                }*/
+                }
+
+                _client.addClientObserver(this);
 
                 Thread processusClient = new Thread(_client);
                 processusClient.start();

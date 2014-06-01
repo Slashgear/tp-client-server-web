@@ -5,10 +5,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.activation.MimetypesFileTypeMap;
 
 /**
  * Class for a response to an HTTP Request
@@ -62,13 +62,17 @@ public class Response extends Request {
      * @param _pageContent
      */
     public Response(int _code, String _message, File _pageContent) {
-        this._code = _code;
-        this._message = _message;
-        this._pageContent = _pageContent;
-        this._contentLength = _pageContent.length();
-        this._contentType = new MimetypesFileTypeMap().getContentType(_pageContent);
-        this._httpVersion = Request.HTTP_VERSION;
-        this.buildContent();
+        try {
+            this._code = _code;
+            this._message = _message;
+            this._pageContent = _pageContent;
+            this._contentLength = _pageContent.length();
+            this._contentType = Files.probeContentType(_pageContent.toPath());
+            this._httpVersion = Request.HTTP_VERSION;
+            this.buildContent();
+        } catch (IOException ex) {
+            Logger.getLogger(Response.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -82,48 +86,66 @@ public class Response extends Request {
     }
 
     /**
-     * Build the _content of the Request from this format
-     * {HTTP Version} {HTTPcode} {HTTP Message}
-     * Date : 
-     * Content-type :
-     * Content-length :
-     * 
+     * Build the _content of the Request from this format {HTTP Version}
+     * {HTTPcode} {HTTP Message} Date : Content-type : Content-length :
+     *
      * {File content}
-     * 
-     * Return a "" string if any exception caught
+     *
+     * Page content is a "" string if any exception caught
      */
     public void buildContent() {
         FileReader reader = null;
         BufferedReader buffrdr;
-        String rep = "", line, pageContent = "";
+        String line;
+        StringBuilder pageContent = new StringBuilder(), rep = new StringBuilder();
         try {
-            //Reading content of the file
-            buffrdr = new BufferedReader(new FileReader(_pageContent));
-            while ((line = buffrdr.readLine()) != null) {
-                pageContent += line;
-                pageContent += "\n";
+            if (!_contentType.startsWith("image")) {
+                //Reading content of the file
+                buffrdr = new BufferedReader(new FileReader(_pageContent));
+                while ((line = buffrdr.readLine()) != null) {
+                    pageContent.append(line);
+                    pageContent.append("\n");
+                }
+                buffrdr.close();
             }
-            buffrdr.close();
-
+            
             //Add http version, http code and message to explain
-            rep = _httpVersion + " " + _code + " " + _message;
+            rep.append(_httpVersion);
+            rep.append(" ");
+            rep.append(_code);
+            rep.append(" ");
+            rep.append(_message);
+            rep.append("\r\n");
             //Add current date, time
-            rep = rep + "\n" + "Date : " + new Date();
+            rep.append("Date: ");
+            rep.append(new Date());
+            rep.append("\r\n");
             //Add Content-typ header
-            rep = rep + "\n" + "Content-type : " + _contentType;
+            rep.append("Content-type: ");
+            rep.append(_contentType);
+            rep.append("\r\n");
             //Add Content length header
-            rep = rep + "\n" + "Content-length : " + _contentLength;
+            rep.append("Content-length: ");
+            rep.append(_contentLength);
+            rep.append("\r\n");
             //Void line
-            rep = rep + "\n\n";
+            rep.append("\r\n");
             //Page content
-            rep = rep + pageContent;
+            rep.append(pageContent.toString());
 
         } catch (FileNotFoundException ex) {
             Logger.getLogger(Response.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(Response.class.getName()).log(Level.SEVERE, null, ex);
         }
-        this._content = rep;
+        this._content = rep.toString();
+    }
+    
+    public void buildContent2() {
+        FileReader reader = null;
+        BufferedReader buffrdr;
+        String line;
+        StringBuilder pageContent = new StringBuilder(), rep = new StringBuilder();
     }
 
 }
