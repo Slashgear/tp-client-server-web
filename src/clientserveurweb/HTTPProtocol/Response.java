@@ -99,16 +99,14 @@ public class Response extends Request {
         String line;
         StringBuilder pageContent = new StringBuilder(), rep = new StringBuilder();
         try {
-            if (!_contentType.startsWith("image")) {
-                //Reading content of the file
-                buffrdr = new BufferedReader(new FileReader(_pageContent));
-                while ((line = buffrdr.readLine()) != null) {
-                    pageContent.append(line);
-                    pageContent.append("\n");
-                }
-                buffrdr.close();
+            //Reading content of the file
+            buffrdr = new BufferedReader(new FileReader(_pageContent));
+            while ((line = buffrdr.readLine()) != null) {
+                pageContent.append(line);
+                pageContent.append("\n");
             }
-            
+            buffrdr.close();
+
             //Add http version, http code and message to explain
             rep.append(_httpVersion);
             rep.append(" ");
@@ -139,13 +137,6 @@ public class Response extends Request {
             Logger.getLogger(Response.class.getName()).log(Level.SEVERE, null, ex);
         }
         this._content = rep.toString();
-    }
-    
-    public void buildContent2() {
-        FileReader reader = null;
-        BufferedReader buffrdr;
-        String line;
-        StringBuilder pageContent = new StringBuilder(), rep = new StringBuilder();
     }
 
 }

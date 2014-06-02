@@ -2,11 +2,8 @@ package clientserveurweb.client.UI;
 
 import clientserveurweb.client.Core.Client;
 import clientserveurweb.client.Core.Observers.ClientObserver;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Web browser UI class
@@ -162,14 +159,13 @@ public class ClientMainFrame extends javax.swing.JFrame implements ClientObserve
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void onResponseContent(String str, String contentType) {
-        jEditorPane.setContentType("text/html");
+    public void onResponseContent(String str) {
         jEditorPane.setText(str);
+
     }
 
     @Override
     public void onTextResponse(String str) {
-
         jMainTextPane.setText(str);
     }
 }

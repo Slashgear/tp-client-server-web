@@ -4,14 +4,10 @@ import clientserveurweb.HTTPProtocol.Get;
 import clientserveurweb.HTTPProtocol.Response;
 import clientserveurweb.serveur.Core.Observers.Observable;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
@@ -41,11 +37,6 @@ public class Connection extends Observable implements Runnable {
     private BufferedReader _in;
 
     /**
-     * Booléen : true si connexion active, false si connexion terminée
-     */
-    private boolean _terminated;
-
-    /**
      * Constructeur prenant en paramètre un Socket. Initialise les flux entrant
      * et sortant avec le client
      *
@@ -58,7 +49,6 @@ public class Connection extends Observable implements Runnable {
             _in = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
             //_out = new PrintStream(_socket.getOutputStream());
             _out = new DataOutputStream(_socket.getOutputStream());
-            _terminated = false;
         } catch (IOException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -118,7 +108,6 @@ public class Connection extends Observable implements Runnable {
                         rep = new Response(400, "Bad request.", filerequested);
                         _out.writeBytes(rep.getContent());
                         // _out.println(rep.getContent());
-                        _terminated = false;
                     } else {
                         //Si la requête a une mauvaise version de HTTP
                         if (t.length >= 3 && !t[2].contains(Get.HTTP_VERSION)) {
@@ -127,7 +116,6 @@ public class Connection extends Observable implements Runnable {
                             //_out.println(rep.getContent());
                             _out.writeBytes(rep.getContent());
                             _out.close();
-                            _terminated = true;
                         } else {
                             //Si aucun fichier n'a été spécifié dans l'URL
                             if (filename.equals("")) {
@@ -147,7 +135,8 @@ public class Connection extends Observable implements Runnable {
                                 _out.writeBytes(rep.getContent());
                             } else {
                                 //Si le fichier n'est pas accessible en lecture
-                                if (!filerequested.canRead()) {
+                                // Ou si on tente d'accéder aux fichiers d'erreurs
+                                if (!filerequested.canRead() || filename.contains("ERROR")) {
                                     filerequested = new File(Serveur.SERVER_DIRECTORY + "ERROR/403_Forbidden.html");
                                     rep = new Response(403, "Forbidden", filerequested);
                                     //_out.println(rep.getContent());
@@ -167,13 +156,11 @@ public class Connection extends Observable implements Runnable {
                     rep = new Response(400, "Bad request.", filerequested);
                     //_out.println(rep.getContent());
                     _out.writeBytes(rep.getContent());
-                    _terminated = false;
                 } catch (NullPointerException e) {
                     filerequested = new File(Serveur.SERVER_DIRECTORY + "ERROR/400_BadRequest.html");
                     rep = new Response(400, "Bad request.", filerequested);
                     // _out.println(rep.getContent());
                     _out.writeBytes(rep.getContent());
-                    _terminated = false;
                 }
             } else {
 
@@ -181,8 +168,6 @@ public class Connection extends Observable implements Runnable {
                 rep = new Response(400, "Bad request.", filerequested);
                 //_out.println(rep.getContent());
                 _out.writeBytes(rep.getContent());
-                _terminated = false;
-
             }
         } catch (IOException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);

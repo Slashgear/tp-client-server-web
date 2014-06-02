@@ -33,9 +33,9 @@ public class Observable {
         }
     }
 
-    public void fireResponseContent(String str, String contentType) {
+    public void fireResponseContent(String str) {
         for (ClientObserver o : _observers) {
-            o.onResponseContent(str, contentType);
+            o.onResponseContent(str);
         }
     }
 
