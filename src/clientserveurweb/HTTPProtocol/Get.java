@@ -21,7 +21,8 @@ public class Get extends Request {
         requete.append(url.toString());
         requete.append(" ");
         requete.append(HTTP_VERSION);
-        _content = requete.toString();
+        requete.append("\r\n");
+        _content = requete.toString().getBytes();
     }
 
 }

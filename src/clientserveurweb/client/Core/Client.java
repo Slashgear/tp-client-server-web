@@ -2,18 +2,19 @@ package clientserveurweb.client.Core;
 
 import clientserveurweb.HTTPProtocol.Get;
 import clientserveurweb.client.Core.Observers.Observable;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,72 +53,111 @@ public class Client extends Observable implements Runnable {
             _socket = new Socket(_ipServ, _port);
 
             // Flux entrant
-            BufferedReader in = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
+            InputStream is = _socket.getInputStream();
+            //BufferedReader in = new BufferedReader(new InputStreamReader(is));
+
+            BufferedInputStream bis = new BufferedInputStream(is);
 
             // Flux sortant
-            PrintStream out = new PrintStream(_socket.getOutputStream());
+            DataOutputStream out = new DataOutputStream(_socket.getOutputStream());
 
             //Autres variables
             StringBuilder builder = new StringBuilder();
             long contentLength = 0;
             String line = "", contentType = "", pageContent = "";
 
-            System.out.println(_get.getContent());
-            out.println(_get.getContent());
+            //Envoi de la requete HTTP
+            System.out.println(new String(_get.getContent()));
+            out.write(_get.getContent());
             out.flush();
 
-            //récupération du header
-            while ((line = in.readLine()) != null && !line.equals("")) {
-                if (line.startsWith("Content-type")) {
-                    int i = line.indexOf(line);
-                    contentType = line.substring(i + "Content-type: ".length());
-                }
-                if (line.startsWith("Content-length")) {
-                    contentLength = Long.parseLong(line.substring(line.indexOf(line) + "Content-length: ".length()));
-                }
-                builder.append(line);
-                builder.append("\r\n");
+            //Récupération de tout le contenu de la réponse en binaire
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            int numberRead;
+            byte[] buf = new byte[16384];
+
+            while ((numberRead = is.read(buf, 0, buf.length)) != -1) {
+                buffer.write(buf, 0, numberRead);
             }
-            builder.append("\r\n");
 
+            buf = buffer.toByteArray();
+            int length = buf.length;
+
+            byte[] delimiter = "\r\n\r\n".getBytes();
+            int indexOfDelimiter = -1;
+
+            for (int i = 0; i < length && i + 4 < length && indexOfDelimiter < 0; i++) {
+                if (buf[i] == delimiter[0] && buf[i + 1] == delimiter[1] && buf[i + 2] == delimiter[2] && buf[i + 3] == delimiter[3]) {
+                    indexOfDelimiter = i;
+                }
+            }
+
+            //Récupération que des headers
+            ByteBuffer bytebuff = ByteBuffer.allocate(indexOfDelimiter + 4);
+            bytebuff.put(buf, 0, indexOfDelimiter);
+            bytebuff.put(delimiter);
+            byte[] headers = new byte[indexOfDelimiter + 4];
+            bytebuff.rewind();
+            bytebuff.get(headers);
+
+            String header = new String(headers, "UTF-8");
+
+            //Récupération du contenu du fiohier
+            if (header.contains("Content-type")) {
+                int startindex = header.indexOf("Content-type") + "Content-type: ".length();
+                int endindex = header.indexOf("\r\n", startindex);
+                contentType = header.substring(startindex, endindex);
+            }
+
+            //Récupération de la taille du fichier
+            if (header.contains("Content-length")) {
+                int startindex = header.indexOf("Content-length") + "Content-length: ".length();
+                int endindex = header.indexOf("\r\n", startindex);
+                contentLength = Long.parseLong(header.substring(startindex, endindex));
+            }
+
+            //Récupération du contenu du fichier envoyé
+            bytebuff.rewind();
+            bytebuff = ByteBuffer.allocate((int) contentLength);
+            bytebuff.put(buf, indexOfDelimiter + 4, length - indexOfDelimiter - 4);
+            bytebuff.rewind();
+            byte[] contentBytes = new byte[length - indexOfDelimiter - 4];
+            bytebuff.get(contentBytes);
+
+            //Si le fichier est une image
             if (contentType.startsWith("image")) {
-                byte[] buf = new byte[(int) contentLength];
-                DataInputStream datastream = new DataInputStream(_socket.getInputStream());
-
                 // On récupère le nom du fichier
                 String[] splits = _get.getUrl().getFile().split("/");
-                //On crée un fichier pour l'image dans le répoertoire tmp
+                //On crée un fichier pour l'image dans le répertoire tmp
                 File imgTmp = new File("tmp\\" + splits[splits.length - 1]);
                 File dir = new File("tmp");
                 if (!dir.isDirectory()) {
                     dir.mkdir();
                 }
                 imgTmp.createNewFile();
-                FileOutputStream fos = new FileOutputStream(imgTmp);
 
-                if (datastream.read(buf) == contentLength) {
-                    fos.write(buf);
-                }
+                //Flux d'écriture dans le fichier
+                FileOutputStream fos = new FileOutputStream(imgTmp);
+                fos.write(contentBytes);
                 fos.close();
-                datastream.close();
-                //Envoie des données
-                fireTextResponse(builder.toString());
+                
+                //On envoit les données à afficher sur le navigateur
+                fireTextResponse(header);
                 fireResponseContent(buildImagePageContent(imgTmp));
 
             } else if (contentType.startsWith("text")) {
-                while ((line = in.readLine()) != null) {
-                    builder.append(line);
-                    builder.append("\r\n");
-                }
-                pageContent = builder.toString();
-                int i = builder.toString().indexOf("\r\n\r\n");
-                fireTextResponse(pageContent);
-                fireResponseContent(buildPageContent(builder.toString().substring(i + 4), contentType));
+                String content = new String(contentBytes, "UTF-8");
+                //Préparation du contenu textuel
+                builder.append(header);
+                builder.append(content);
+                
+                //On envoit les données à afficher sur le navigateur
+                fireTextResponse(builder.toString());
+                fireResponseContent(content);
             }
-
-            in.close();
+            //Fermeture des flux
+            is.close();
             out.close();
-
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -127,9 +167,9 @@ public class Client extends Observable implements Runnable {
         //Affichage de l'image en HTML
         StringBuilder builder = new StringBuilder();
         builder.append("<!doctype HTML PUBLIC>\n<HTML>\n<BODY>");
-        builder.append("<img src=\"");
-        builder.append(image.getAbsolutePath());
-        builder.append("\"/>");
+        builder.append("<img src='");
+        builder.append(image.toURI().toString());
+        builder.append("'/>");
         builder.append("<BODY>\n</HTML>");
         return builder.toString();
 

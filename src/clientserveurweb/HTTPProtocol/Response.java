@@ -1,8 +1,13 @@
 package clientserveurweb.HTTPProtocol;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,7 +39,7 @@ public class Response extends Request {
      */
     private long _contentLength;
     /**
-     * MIME Type of the file Ex : txt/html, image/jpeg etc.
+     * MIME Type of the file Ex : text/html, image/jpeg etc.
      */
     private String _contentType;
     /**
@@ -94,18 +99,10 @@ public class Response extends Request {
      * Page content is a "" string if any exception caught
      */
     public void buildContent() {
-        FileReader reader = null;
-        BufferedReader buffrdr;
+
         String line;
         StringBuilder pageContent = new StringBuilder(), rep = new StringBuilder();
         try {
-            //Reading content of the file
-            buffrdr = new BufferedReader(new FileReader(_pageContent));
-            while ((line = buffrdr.readLine()) != null) {
-                pageContent.append(line);
-                pageContent.append("\n");
-            }
-            buffrdr.close();
 
             //Add http version, http code and message to explain
             rep.append(_httpVersion);
@@ -128,15 +125,36 @@ public class Response extends Request {
             rep.append("\r\n");
             //Void line
             rep.append("\r\n");
+
             //Page content
-            rep.append(pageContent.toString());
+            if (_contentType.startsWith("text")) {
+                //Reading content of the file
+                BufferedReader buffrdr = new BufferedReader(new FileReader(_pageContent));
+                while ((line = buffrdr.readLine()) != null) {
+                    pageContent.append(line);
+                    pageContent.append("\n");
+                }
+                buffrdr.close();
+                rep.append(pageContent.toString());
+                this._content = rep.toString().getBytes("UTF-8");
+            } else {
+                byte[] repBuf = rep.toString().getBytes("UTF-8");
+                byte[] buf = new byte[(int) _contentLength];
+                this._content = new byte[rep.toString().length() + (int) _contentLength];
+
+                DataInputStream buffis = new DataInputStream(new FileInputStream(_pageContent));
+                buffis.readFully(buf);
+                
+                System.arraycopy(repBuf, 0, this._content, 0, repBuf.length);
+                System.arraycopy(buf, 0, this._content, repBuf.length, buf.length);
+
+            }
 
         } catch (FileNotFoundException ex) {
             Logger.getLogger(Response.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(Response.class.getName()).log(Level.SEVERE, null, ex);
         }
-        this._content = rep.toString();
     }
 
 }

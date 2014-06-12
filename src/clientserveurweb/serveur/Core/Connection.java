@@ -29,8 +29,8 @@ public class Connection extends Observable implements Runnable {
     /**
      * Flux sortant vers le client
      */
-    //private PrintStream _out;
     private DataOutputStream _out;
+    
     /**
      * Flux entrant du client
      */
@@ -106,7 +106,7 @@ public class Connection extends Observable implements Runnable {
                     if (!t[0].contains("GET")) {
                         filerequested = new File(Serveur.SERVER_DIRECTORY + "ERROR/400_BadRequest.html");
                         rep = new Response(400, "Bad request.", filerequested);
-                        _out.writeBytes(rep.getContent());
+                        _out.write(rep.getContent());
                         // _out.println(rep.getContent());
                     } else {
                         //Si la requête a une mauvaise version de HTTP
@@ -114,7 +114,7 @@ public class Connection extends Observable implements Runnable {
                             filerequested = new File(Serveur.SERVER_DIRECTORY + "ERROR/505_HTTPVersionNotSupported.html");
                             rep = new Response(505, "HTTP Version not supported", filerequested);
                             //_out.println(rep.getContent());
-                            _out.writeBytes(rep.getContent());
+                            _out.write(rep.getContent());
                             _out.close();
                         } else {
                             //Si aucun fichier n'a été spécifié dans l'URL
@@ -132,7 +132,7 @@ public class Connection extends Observable implements Runnable {
                                 filerequested = new File(Serveur.SERVER_DIRECTORY + "ERROR/404_NotFound.html");
                                 rep = new Response(404, "File not found", filerequested);
                                 //_out.println(rep.getContent());
-                                _out.writeBytes(rep.getContent());
+                                _out.write(rep.getContent());
                             } else {
                                 //Si le fichier n'est pas accessible en lecture
                                 // Ou si on tente d'accéder aux fichiers d'erreurs
@@ -140,12 +140,12 @@ public class Connection extends Observable implements Runnable {
                                     filerequested = new File(Serveur.SERVER_DIRECTORY + "ERROR/403_Forbidden.html");
                                     rep = new Response(403, "Forbidden", filerequested);
                                     //_out.println(rep.getContent());
-                                    _out.writeBytes(rep.getContent());
+                                    _out.write(rep.getContent());
                                 } else {
                                     // ... Sinon la requête est valide
                                     rep = new Response(200, "OK", filerequested);
                                     //_out.println(rep.getContent());
-                                    _out.writeBytes(rep.getContent());
+                                    _out.write(rep.getContent());
 
                                 }
                             }
@@ -155,19 +155,19 @@ public class Connection extends Observable implements Runnable {
                     filerequested = new File(Serveur.SERVER_DIRECTORY + "ERROR/400_BadRequest.html");
                     rep = new Response(400, "Bad request.", filerequested);
                     //_out.println(rep.getContent());
-                    _out.writeBytes(rep.getContent());
+                    _out.write(rep.getContent());
                 } catch (NullPointerException e) {
                     filerequested = new File(Serveur.SERVER_DIRECTORY + "ERROR/400_BadRequest.html");
                     rep = new Response(400, "Bad request.", filerequested);
                     // _out.println(rep.getContent());
-                    _out.writeBytes(rep.getContent());
+                    _out.write(rep.getContent());
                 }
             } else {
 
                 filerequested = new File(Serveur.SERVER_DIRECTORY + "ERROR/400_BadRequest.html");
                 rep = new Response(400, "Bad request.", filerequested);
                 //_out.println(rep.getContent());
-                _out.writeBytes(rep.getContent());
+                _out.write(rep.getContent());
             }
         } catch (IOException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);

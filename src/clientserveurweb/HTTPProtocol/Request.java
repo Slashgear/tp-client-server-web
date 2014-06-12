@@ -15,9 +15,10 @@ public abstract class Request {
     /**
      *
      */
-    protected String _content;
+    protected byte[] _content;
 
-    public String getContent() {
+    public byte[] getContent() {
         return _content;
     }
+
 }
