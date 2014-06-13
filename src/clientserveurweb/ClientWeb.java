@@ -6,7 +6,7 @@ import clientserveurweb.client.UI.ClientMainFrame;
  *
  * @author Antoine
  */
-public class test {
+public class ClientWeb {
     /*A tester sur d'autres serveurs */
 
     public static void main(String[] args) {
